@@ -16,7 +16,6 @@ def sampleLNC(evTable):
     names = {"A", "B", "C", "D"}
 
     predicates = ["SMOKES", "FRIENDS"]
-    #rules.append(["MOVES", X, "WALKS", X])
     rules = [["SMOKES", X, "FRIENDS", X, Y, "SMOKES", Y]]
 
     #############################################################################
