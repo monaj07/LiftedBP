@@ -184,9 +184,6 @@ def sampleLNC(evTable):
 
 
 
-
-
-
 def makeToyGraph():
     """
     Moves(x) => Walks(x)
