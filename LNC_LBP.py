@@ -101,9 +101,8 @@ def sampleLNC(evTable):
 
     superNodes = dict()
     for pred in predicates:
-        true_evs = []
-        fals_evs = []
-        unkn_evs = []
+        true_evdcs = []
+        fals_evdcs = []
         if pred in evTable:
             v1 = varcsrt(Symbol('X'))# Initial supernode for True atoms
             v2 = varcsrt(Symbol('X'))# Initial supernode for false atoms
@@ -113,8 +112,8 @@ def sampleLNC(evTable):
                     v1.domain.update(tp[0:-1])
                 else:
                     v2.domain.update(tp[0:-1])
-            true_evs.append(superNode(pred, v1, "T"))
-            fals_evs.append(superNode(pred, v2, "F"))
+            true_evdcs.append(superNode(pred, v1, "T"))
+            fals_evdcs.append(superNode(pred, v2, "F"))
 
         v = varcsrt(Symbol('X'))
         if num_args[pred]==1:
@@ -124,8 +123,8 @@ def sampleLNC(evTable):
         else:
             ValueError("You have not written this code for predicates with more than two arguments!")
 
-        unkn_evs = [superNode(pred, v)]
-        superNodes[pred] = true_evs+ fals_evs+ unkn_evs
+        unknowns = [superNode(pred, v)]
+        superNodes[pred] = true_evdcs+ fals_evdcs+ unknowns
     #----------------------------------------------------------------------------
 
     #############################################################################
