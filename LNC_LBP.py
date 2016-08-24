@@ -66,6 +66,13 @@ def returnVars(n):
 
 
 #############################################################################
+def return_different_worlds(narg, names):
+    input = (tuple(names) for i in np.arange(narg))
+    return tuple(itertools.product(*tuple(input)))
+#----------------------------------------------------------------------------
+
+
+#############################################################################
 class varDom(object): # Defining the class that embeds variables and their constraints
     def __init__(self, v, domain = None):
         if domain is None:
@@ -73,7 +80,10 @@ class varDom(object): # Defining the class that embeds variables and their const
         self.var = v
         self.domain = domain
     def __str__(self):
-        return "%s" %(self.domain)
+        st = ""
+        for s in self.domain:
+            st = st + "(" + ",".join(list(s)) + ") "
+        return "%s" %(st)
     def __eq__(self, other):
         return isinstance(other, self.__class__) and \
                (self.domain==other.domain) # and self.var==other.var
@@ -90,6 +100,8 @@ class superNode(object):
         self.vdom= vdom
     def __str__(self):
         return "(%s, %s)" %(self.pred, self.vdom)
+    def print(self):
+        pass
     def __eq__(self, other):
         return isinstance(other, self.__class__) and \
                (self.pred==other.pred and self.vdom==other.vdom)
@@ -111,7 +123,7 @@ def sampleLNC(evTable):
     """
     X = Symbol('X')
     Y = Symbol('Y')
-    names = {"A", "B", "C", "D"}
+    names = {"A", "B", "C", "D", "E", "F"}
 
     predicates = ["SMOKES", "FRIENDS"]
     rules = [["SMOKES", X, "FRIENDS", X, Y, "SMOKES", Y],]
@@ -181,51 +193,47 @@ def sampleLNC(evTable):
 
         # Now, Forming the supernodes by doing projection from superfeatures to predicates
         superNodesCounter = dict()
-        superNodePredDict = defaultdict(list)
-        for supfeat in superFeatures:
-            for i in np.arange(len(supfeat)):
-                tup = supfeat[i]
-                if not tup in superNodesCounter:
-                    superNodesCounter[tup] = None
-                    print(tup, "\n")
+        for pred in predicates:
+            if not pred in predicates: # Discarding the noon-predicate items in rule, like X, Y, ...
+                continue
+            parvar_groundings = return_different_worlds(num_args[pred], names)
+            for parvar_grnd in parvar_groundings:
+                projections = []
+                for idx, supfeat in enumerate(superFeatures):
+                    clause = rules_parvars[clause_vars[idx]] # has the form of ((X, ), (X, Y), (Y, )).
+                    # Now, for each atom in the supfeat, we check if the atom.pred matches 'pred';
+                    # if that is the case, we compute the number of projection of sufeat onto thia predicate with this grounding of 'paravar_grnd'.
+                    proj = []
+                    for i in np.arange(len(supfeat)):
+                        if not supfeat[i].pred == pred:
+                            proj.append(0)
+                            continue
+                        parvars = [item for tp in clause for item in tp] # parvars = [X, X, Y, Y]
+                        parvarDict = dict.fromkeys(parvars, names) # Forming a dictionary that maps each par-var to its domain
+                        pvs = clause[i]
+                        for j in np.arange(num_args[pred]):
+                            parvarDict[pvs[j]] = parvar_grnd[j] # Initializing the parvar_domain_dictionary with the groundings. Note that we want to compute all possible projection of this superfeature 'supfeat', onto this predicate with this specific grounding 'parvar_grnd'
+                        for k in np.arange(len(supfeat)):
+                            refined_dom = supfeat[k].vdom.domain
+                            for ipv, pv in enumerate(clause[k]): # Loops through the par-vars within a predicate and makes their domains consistent with themselves and the grounding parvar_grnd
+                                refined_dom = {item for item in refined_dom if item[ipv] in parvarDict[pv]}
+                            for ipv, pv in enumerate(clause[k]):
+                                parvarDict[pv] = {item[ipv] for item in refined_dom} # Restricting the domain of each par-var based on the refined domains of the atom
 
+                        proj_num = 1
+                        for k, v in parvarDict.items():
+                            proj_num *= len(v)
 
-        for tup in superNodesCounter:
-            projections = []
-            for idx, supfeat in enumerate(superFeatures):
-                clause = rules_parvars[clause_vars[idx]] # has the form of ((X, ), (X, Y), (Y, ))
-                parvars_domains_size = [] # Stores the size of the domain set of each par-var in the superfeature: [len(dom1), len(dom2_1), len(dom2_2), len(dom3)],
-                                     # Note that since these superfeatures are already "joined", for this specific clause, we must have
-                                     # dom1 = dom2_1 and dom2_2 = dom3
-                for i in np.arange(len(supfeat)):
-                    dom = supfeat[i].vdom.domain
-                    sampleElem = dom.pop() # Sampling an element from the set to find the dimension of the set elements
-                    dom.add(sampleElem) # Returning the sampled element back to the set
-                    for j in np.arange(len(sampleElem)):  # i.e. we want to know the number of arguments of the current predicate in the superfeature.
-                                            # For this, we needed to find the dimensions of a sample element in its domain (dom)
-                        reduced_dom = {elem[j:j+1] for elem in dom}
-                        parvars_domains_size.append(len(reduced_dom))
-                parvars = [item for tp in clause for item in tp] # parvars = [X, X, Y, Y]
-                                                                 # Note that parvars_domains and parvars must have the same length.
-                parvarDict = dict.fromkeys(parvars, None) # Forming a dictionary that maps each par-var to the size of its domain (for the superfeature in which we are)
+                        proj.append(proj_num)
+                    projections.append(tuple(proj))
+                spnd_domain = set()
+                spnd_domain.add(parvar_grnd)
+                spnd = superNode(pred, varDom(None, spnd_domain))
+                #print(spnd)
+                superNodesCounter[spnd] = tuple(projections)
+                #print("")
 
-                proj = []
-                for i in np.arange(len(supfeat)):
-                    tupNeighb = supfeat[i]
-                    proj_num = 1
-                    for j in np.arange(len(parvars)):
-                        parvarDict[parvars[j]] = parvars_domains_size[j] # Filling the dictionary
-                    if tup.pred==tupNeighb.pred:
-                        if tup.vdom.domain.intersection(tupNeighb.vdom.domain): # If there is overlap between the domains, we have stisfaction
-                            for parvar in clause[i]:
-                                parvarDict[parvar] = 1
-                            for k, v in parvarDict.items():
-                                proj_num *= v
-                            proj.append(proj_num)
-                projections.append(tuple(proj))
-            superNodesCounter[tup] = tuple(projections)
-
-        #Now the superNodes (tuples) that have similar projectino vectors are combined to form bigger superNodes with wider domains.
+        #Now the superNodes (tuples) that have similar projection vectors are combined to form bigger superNodes with wider domains.
         superNodesUpdated = defaultdict(set)
         projectionToTuplesDict = {}
         dummy = [projectionToTuplesDict.setdefault(v,[]).append(k) for (k,v) in superNodesCounter.items()]
@@ -237,7 +245,7 @@ def sampleLNC(evTable):
             superNodesUpdated[v[0].pred].add(sn)
 
         if superNodesUpdated==superNodes:
-            break
+            return superNodes
         # If superNodesUpdated==superNodes, then no more supernode has been added in this iteration of the main While loop, and we are done!
         # Else: The loop is not converged yet, go for another iteration for more refining of the superNodes.
         superNodes = superNodesUpdated
@@ -247,42 +255,12 @@ def sampleLNC(evTable):
 # END OF sampleLNC() FUNCTION
 #----------------------------------------------------------------------------
 
-"""
-for supfeat in superFeatures:
-            for i in np.arange(len(supfeat)):
-                tup = supfeat[i]
-                if tup.pred in superNodePredDict:
-                    for tupStored in superNodePredDict[tup.pred]:
-                        if tup==tupStored:
-                            continue
-                            # Refining superNodes: If there exist superNode {B, C, D} and we also have superNode {B, C}, refine the first one into
-                            #{D} and {B, C}, where {B, C} is already available.
-                        if tup.vdom.domain.intersection(tupStored.vdom.domain):
-                            if len(tup.vdom.domain) > len(tupStored.vdom.domain):
-                                tup.vdom.domain = tup.vdom.domain - tupStored.vdom.domain
-                            else:
-                                tupStored.vdom.domain = tupStored.vdom.domain - tup.vdom.domain
-                if not tup in superNodePredDict[tup.pred]:
-                    superNodePredDict[tup.pred].append(tup)
-        for pred, tupples in superNodePredDict.items():
-            for tup in tupples:
-                if not tup in superNodesCounter:
-                    superNodesCounter[tup] = None
-                    print(tup, "\n")
-"""
-"""
-        for supfeat in superFeatures:
-            for i in np.arange(len(supfeat)):
-                tup = supfeat[i]
-                if not tup in superNodesCounter:
-                    superNodesCounter[tup] = None
-                    print(tup, "\n")
-"""
 
 def testToyGraph():
 
     evidences = {"SMOKES": [("A", 1)], "FRIENDS": [("B", "C", 1), ("C", "B", 1)]}
-    sampleLNC(evidences)
+    superNodes = sampleLNC(evidences)
+    [print(sn) for spnodes in superNodes.values() for sn in spnodes]
 
 # standard run of test cases
 testToyGraph()
