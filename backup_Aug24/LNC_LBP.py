@@ -251,7 +251,7 @@ def sampleLNC(evTable):
                 dom = dom | velem.vdom.domain
             sn = superNode(v[0].pred, varDom(None, dom))
             superNodesUpdated[v[0].pred].add(sn)
-            superNodesUpdatedWeights[v[0].pred].add( (sn, tuple((item) for item in k) ) )
+            superNodesUpdatedWeights[v[0].pred].add( (sn, tuple(max(item) for item in k) ) )
 
         if superNodesUpdated==superNodes:
             return superNodesUpdatedWeights

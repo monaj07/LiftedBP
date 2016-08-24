@@ -14,8 +14,8 @@ def makeToyGraph():
     w_b = G.addVarNode('wb', 2)
     n_ab = G.addVarNode('nab', 2)
     n_ba = G.addVarNode('nba', 2)
-#    n_aa = G.addVarNode('naa', 2)
-#    n_bb = G.addVarNode('nbb', 2)
+    n_aa = G.addVarNode('naa', 2)
+    n_bb = G.addVarNode('nbb', 2)
 
     pot_ma_wa = np.array([[4, 4], [1, 4]])
     pot_mb_wb = np.array([[4, 4], [1, 4]])
@@ -28,8 +28,8 @@ def makeToyGraph():
     G.addFacNode(pot_mb_wb, m_b, w_b)
     G.addFacNode(pot_wa_nab_wb, w_a, n_ab, w_b)
     G.addFacNode(pot_wb_nba_wa, w_b, n_ba, w_a)
-#    G.addFacNode(pot_wa_naa, w_a, n_aa)
-#    G.addFacNode(pot_wb_nbb, w_b, n_bb)
+    G.addFacNode(pot_wa_naa, w_a, n_aa)
+    G.addFacNode(pot_wb_nbb, w_b, n_bb)
 
     return G
 

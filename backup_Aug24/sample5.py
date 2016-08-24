@@ -11,7 +11,7 @@ def makeToyGraph():
 
     X = Symbol('X')
     Y = Symbol('Y')
-    names = ["A", "B", "C", "D", "G", "F"]
+    names = ["ana", "bob", "charles"]
 
     rules = [["WALKS", X, "NEAR", X, Y, "WALKS", Y]]
 #    rules.append(["MOVES", X, "WALKS", X])
@@ -28,8 +28,6 @@ def makeToyGraph():
 
     for x in names:
         for y in names:
-#            if x==y:
-#                continue
             # Traverse the clause rule:
             for rule in rules:
                 node_names = []
@@ -85,48 +83,26 @@ def makeToyGraph():
 def testToyGraph():
 
     G = makeToyGraph()
-    G.var['WALKS_A'].condition(1)
-    G.var['NEAR_B_C'].condition(1)
-    G.var['NEAR_C_B'].condition(1)
+#    G.var['WALKS_ana'].condition(1)
+    G.var['NEAR_bob_charles'].condition(1)
+    G.var['NEAR_charles_bob'].condition(1)
     marg = G.marginals()
 
     # check the marginals
-    mg = marg['WALKS_A']
-    print("WALKS(A) marginals = ",mg)
-    mg = marg['WALKS_B']
-    print("WALKS(B) marginals = ",mg)
-    mg = marg['WALKS_C']
-    print("WALKS(C) marginals = ",mg)
-    mg = marg['WALKS_D']
-    print("WALKS(D) marginals = ",mg)
-    mg = marg['WALKS_G']
-    print("WALKS(G) marginals = ",mg)
-    mg = marg['WALKS_F']
-    print("WALKS(F) marginals = ",mg)
-    mg = marg['NEAR_D_G']
-    print("NEAR(D, G) marginals = ",mg)
-    mg = marg['NEAR_G_D']
-    print("NEAR(G, D) marginals = ",mg)
-    mg = marg['NEAR_G_F']
-    print("NEAR(G, F) marginals = ",mg)
-#    mg = marg['NEAR_G_G']
-#    print("NEAR(G, G) marginals = ",mg)
-#    mg = marg['NEAR_F_F']
-#    print("NEAR(F, F) marginals = ",mg)
-    mg = marg['NEAR_B_D']
-    print("NEAR(B, D) marginals = ",mg)
-    mg = marg['NEAR_C_D']
-    print("NEAR(C, D) marginals = ",mg)
-    mg = marg['NEAR_G_B']
-    print("NEAR(G, B) marginals = ",mg)
-    mg = marg['NEAR_G_C']
-    print("NEAR(G, C) marginals = ",mg)
+    mg = marg['WALKS_bob']
+    print("WALKS(Bob) marginals = ",mg)
+    mg = marg['WALKS_charles']
+    print("WALKS(Charles) marginals = ",mg)
+    mg = marg['NEAR_ana_charles']
+    print("NEAR(ana, charles) marginals = ",mg)
+    mg = marg['NEAR_ana_bob']
+    print("NEAR(ana, bob) marginals = ",mg)
     print('\n')
 
 
-#    brute = G.bruteForce()
-#    wbbf = G.marginalizeBrute(brute, 'WALKS_bob')
-#    print("Walks(Bob) BRUTE_FORCE marginals = ",wbbf,"\n")
+    brute = G.bruteForce()
+    wbbf = G.marginalizeBrute(brute, 'WALKS_bob')
+    print("Walks(Bob) BRUTE_FORCE marginals = ",wbbf,"\n")
 
 # standard run of test cases
 testToyGraph()
