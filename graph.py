@@ -21,6 +21,7 @@ class Graph:
         self.fac = []
         self.dims = []
         self.converged = False
+        self.weights = []
 
     def addVarNode(self, name, dim):
         newId = len(self.var)
@@ -30,12 +31,19 @@ class Graph:
 
         return newVar
 
+
     def addFacNode(self, P, *args):
         newId = len(self.fac)
         newFac = FacNode(P, newId, *args)
         self.fac.append(newFac)
 
         return newFac
+
+
+    def addEdgeWeights(self, edge_weights_per_node):
+        for k, v in edge_weights_per_node.items():
+            self.var[k].weights = v
+
 
     def disableAll(self):
         """ Disable all nodes in graph
@@ -67,7 +75,7 @@ class Graph:
         timestep = 0
         while timestep < maxsteps and not self.converged: # run for maxsteps cycles
             timestep = timestep + 1
-            print(timestep)
+            #print(timestep)
 
             for f in self.fac:
                 # start with factor-to-variable
@@ -113,7 +121,7 @@ class Graph:
                 # multiply together messages
                 vmarg = 1
                 for i in range(0, len(v.incoming)):
-                    vmarg = vmarg * v.incoming[i]
+                    vmarg = vmarg * np.power(v.incoming[i], v.weights[i])
 
                 # normalize
                 n = np.sum(vmarg)

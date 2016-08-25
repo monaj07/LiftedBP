@@ -84,6 +84,7 @@ class VarNode(Node):
         self.name = name
         self.dim = dim
         self.observed = -1 # only >= 0 if variable is observed
+        self.weights = []
 
     def reset(self):
         super(VarNode, self).reset()
@@ -114,10 +115,13 @@ class VarNode(Node):
             # switch reference for old messages
             self.nextStep()
             for i in range(0, len(self.incoming)):
-                # multiply together all excluding message at current index
-                curr = self.incoming[:]
-                del curr[i]
-                self.outgoing[i] = reduce(np.multiply, curr)
+                # multiply together all messages from each factor raised by their connection weights,
+                # except the message from factor i which must be raised by weight-1.
+                curr = np.ones_like(self.incoming[i][:])
+                for j in np.arange(len(self.incoming)):
+                    curr *= np.power(self.incoming[j], self.weights[j])
+
+                self.outgoing[i] = curr / self.incoming[i]
 
             # normalize once finished with all messages
             self.normalizeMessages()

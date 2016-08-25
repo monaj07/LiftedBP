@@ -1,5 +1,5 @@
 from __future__ import print_function
-from graph import Graph
+from graphOld import Graph
 import numpy as np
 
 def makeToyGraph():
@@ -14,8 +14,8 @@ def makeToyGraph():
     w_b = G.addVarNode('wb', 2)
     n_ab = G.addVarNode('nab', 2)
     n_ba = G.addVarNode('nba', 2)
-    n_aa = G.addVarNode('naa', 2)
-    n_bb = G.addVarNode('nbb', 2)
+#    n_aa = G.addVarNode('naa', 2)
+#    n_bb = G.addVarNode('nbb', 2)
 
     pot_ma_wa = np.array([[4, 4], [1, 4]])
     pot_mb_wb = np.array([[4, 4], [1, 4]])

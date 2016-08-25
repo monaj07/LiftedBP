@@ -6,7 +6,6 @@ import numpy as np
     Basic structure is port of MATLAB code by J. Pacheco
     Central difference: nbrs stored as references, not ids
         (makes message propagation easier)
-
     Note to self: use %pdb and %load_ext autoreload followed by %autoreload 2
 """
 

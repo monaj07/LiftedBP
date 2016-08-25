@@ -1,5 +1,5 @@
 from __future__ import print_function
-from graph import Graph
+from graphOld import Graph
 import numpy as np
 
 def makeToyGraph():

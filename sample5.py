@@ -1,22 +1,20 @@
 from __future__ import print_function
-from graph import Graph
+from graphOld import Graph
 import numpy as np
 from sympy import *
 
 def makeToyGraph():
     """
-    Moves(x) => Walks(x)
-    Walks(x) ^ Near(x,y) => Walks(y)
+    SMOKES(x) ^ FRIENDS(x,y) => SMOKES(y)
     """
 
     X = Symbol('X')
     Y = Symbol('Y')
-    names = ["A", "B", "C", "D", "G", "F", "H", "K", "M", "T", "T1", "T2", "T3", "T4", "L", "P"]
+    names = ["A", "B", "C", "D"]
 
-    rules = [["WALKS", X, "NEAR", X, Y, "WALKS", Y]]
-#    rules.append(["MOVES", X, "WALKS", X])
+    rules = [["SMOKES", X, "FRIENDS", X, Y, "SMOKES", Y]]
 
-    num_args = {"WALKS":1, "MOVES":1, "NEAR":2}
+    num_args = {"SMOKES":1, "FRIENDS":2}
 
     pot_clause1 = np.array([[4, 4], [1, 4]])
     pot_clause2 = np.array([[[4, 4], [4, 4]], [[4, 4], [1, 4]]])
@@ -86,48 +84,30 @@ def makeToyGraph():
 def testToyGraph():
 
     G = makeToyGraph()
-    G.var['WALKS_A'].condition(1)
-    G.var['NEAR_B_C'].condition(1)
-    G.var['NEAR_C_B'].condition(1)
+    G.var['SMOKES_A'].condition(1)
+    G.var['FRIENDS_B_C'].condition(1)
+    G.var['FRIENDS_C_B'].condition(1)
     marg = G.marginals()
 
     # check the marginals
-    mg = marg['WALKS_A']
-    print("WALKS(A) marginals = ",mg)
-    mg = marg['WALKS_B']
-    print("WALKS(B) marginals = ",mg)
-    mg = marg['WALKS_C']
-    print("WALKS(C) marginals = ",mg)
-    mg = marg['WALKS_D']
-    print("WALKS(D) marginals = ",mg)
-    mg = marg['WALKS_G']
-    print("WALKS(G) marginals = ",mg)
-    mg = marg['WALKS_F']
-    print("WALKS(F) marginals = ",mg)
-    mg = marg['NEAR_D_G']
-    print("NEAR(D, G) marginals = ",mg)
-    mg = marg['NEAR_G_D']
-    print("NEAR(G, D) marginals = ",mg)
-    mg = marg['NEAR_G_F']
-    print("NEAR(G, F) marginals = ",mg)
-#    mg = marg['NEAR_G_G']
-#    print("NEAR(G, G) marginals = ",mg)
-#    mg = marg['NEAR_F_F']
-#    print("NEAR(F, F) marginals = ",mg)
-    mg = marg['NEAR_B_D']
-    print("NEAR(B, D) marginals = ",mg)
-    mg = marg['NEAR_C_D']
-    print("NEAR(C, D) marginals = ",mg)
-    mg = marg['NEAR_G_B']
-    print("NEAR(G, B) marginals = ",mg)
-    mg = marg['NEAR_G_C']
-    print("NEAR(G, C) marginals = ",mg)
+    mg = marg['SMOKES_B']
+    print("SMOKES(B) marginals = ",mg)
+    mg = marg['SMOKES_C']
+    print("SMOKES(C) marginals = ",mg)
+    mg = marg['SMOKES_D']
+    print("SMOKES(D) marginals = ",mg)
+    mg = marg['FRIENDS_A_D']
+    print("FRIENDS(A, D) marginals = ",mg)
+    mg = marg['FRIENDS_B_D']
+    print("FRIENDS(B, D) marginals = ",mg)
+    mg = marg['FRIENDS_C_D']
+    print("FRIENDS(C, D) marginals = ",mg)
     print('\n')
 
 
 #    brute = G.bruteForce()
-#    wbbf = G.marginalizeBrute(brute, 'WALKS_bob')
-#    print("Walks(Bob) BRUTE_FORCE marginals = ",wbbf,"\n")
+#    wbbf = G.marginalizeBrute(brute, 'SMOKES_bob')
+#    print("SMOKES(Bob) BRUTE_FORCE marginals = ",wbbf,"\n")
 
 # standard run of test cases
 testToyGraph()

@@ -4,7 +4,7 @@ Ground MLN belief propagation inference
 """
 
 from __future__ import print_function
-from graph import Graph
+from graphOld import Graph
 import numpy as np
 from sympy import *
 
@@ -16,7 +16,7 @@ def makeToyGraph():
 
     X = Symbol('X')
     Y = Symbol('Y')
-    names = ["ali", "bob", "sam", "joe"]
+    names = ["ali", "bob", "sam", "joe", "man", "kkk", "ddd", "eee", "www", "qqq", "sss", "AAA", "FFF", "TTT", "ED", "SX", "VF", "WQ"]
 
     rules = [["WALKS", X, "NEAR", X, Y, "WALKS", Y]]
     rules.append(["MOVES", X, "WALKS", X])
@@ -46,7 +46,6 @@ def makeToyGraph():
                     vars = []
                     for i in np.arange(narg):
                         var = rule[c].subs({X:x, Y:y})
-                        print(var)
                         c += 1
                         vars.append(var.name)
                     if (narg==1):
@@ -89,7 +88,16 @@ def testToyGraph():
 
     G = makeToyGraph()
     G.var['WALKS_ali'].condition(1)
+#    G.var['NEAR_bob_sam'].condition(1)
+#    G.var['NEAR_sam_bob'].condition(1)
     marg = G.marginals()
+
+    mg = marg['WALKS_bob']
+    print("WALKS(bob) marginals = ",mg)
+    mg = marg['WALKS_sam']
+    print("WALKS(sam) marginals = ",mg)
+    mg = marg['WALKS_joe']
+    print("WALKS(joe) marginals = ",mg)
 
     # check the marginals
     mb_marg = marg['MOVES_bob']
@@ -113,9 +121,9 @@ def testToyGraph():
     print('\n')
 
 
-    brute = G.bruteForce()
-    wbbf = G.marginalizeBrute(brute, 'WALKS_bob')
-    print("Walks(Bob) BRUTE_FORCE marginals = ",wbbf,"\n")
+#    brute = G.bruteForce()
+#    wbbf = G.marginalizeBrute(brute, 'WALKS_bob')
+#    print("Walks(Bob) BRUTE_FORCE marginals = ",wbbf,"\n")
 
 # standard run of test cases
 testToyGraph()

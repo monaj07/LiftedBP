@@ -3,7 +3,7 @@ from __future__ import print_function
 from builtins import range
 from future.utils import iteritems
 import numpy as np
-from node import FacNode, VarNode
+from nodeOld import FacNode, VarNode
 import pdb
 
 """ Factor Graph classes forming structure for PGMs
@@ -67,7 +67,7 @@ class Graph:
         timestep = 0
         while timestep < maxsteps and not self.converged: # run for maxsteps cycles
             timestep = timestep + 1
-            print(timestep)
+            #print(timestep)
 
             for f in self.fac:
                 # start with factor-to-variable

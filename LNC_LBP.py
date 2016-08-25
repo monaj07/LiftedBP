@@ -49,23 +49,6 @@ def overlap_nodes(vdom1, vdom2):
 
 
 #############################################################################
-def returnVars(n):
-    """
-    :param n: the -ary of the predicate
-    :return: for a n-ary predicate, returns the variable symbols
-    """
-    if n==1:
-        return [Symbol('X')]
-    elif n==2:
-        return [Symbol('X'), Symbol('Y')]
-    elif n==3:
-        return [Symbol('X'), Symbol('Y'), Symbol('Z')]
-    else:
-        raise ValueError("Are you sure you want this many variables in your predicate?")
-#----------------------------------------------------------------------------
-
-
-#############################################################################
 def return_different_worlds(narg, names):
     input = (tuple(names) for i in np.arange(narg))
     return tuple(itertools.product(*tuple(input)))
@@ -130,7 +113,7 @@ def sampleLNC(evTable):
     """
     X = Symbol('X')
     Y = Symbol('Y')
-    names = {"A", "B", "C", "D", "G", "F"}
+    names = {"A", "B", "C", "D"}#, "E", "F", "G", "H", "I", "J", "X", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W"}
 
     predicates = ["SMOKES", "FRIENDS"]
     rules = [["SMOKES", X, "FRIENDS", X, Y, "SMOKES", Y],]
@@ -283,22 +266,31 @@ def makeTheLiftedGraph(superNodes):
             isn += 1
     nsf = len(snodes_projections[0]) # number of superfeatures (taken from a sample supernode)
     nsn = len(snodes) # number of supernodes
+    edge_weights_per_node = defaultdict(list)
     for i in np.arange(nsf):
         feat_nodes = [0]*len(snodes_projections[0][i]) # feat_nodes enlists the supernodes connected to the superfeature
+        weights = [0]*len(snodes_projections[0][i])
         for j in np.arange(nsn):
             try:
                 x = np.array(snodes_projections[j][i]) # snodes_projections[j][i] is a tuple that lists the projections of the superfeature i onto the supernode j
                 index = np.where(x!=0)[0][0]
-                feat_nodes[index] = j+1 # supernode j is connected to superfeature i as an atom at position index. (added by 1 to avoid confusion supernode with index 0 from no projection)
+                feat_nodes[index] = j+1 # supernode j is connected to superfeature i as an atom at position 'index'. (added by 1 to avoid confusion supernode with index 0 from no projection)
                 #NOTE: Here I have specifically written the above for SMOKES(X)^FRIENDS(X,Y)=>SMOKES(Y). i.o. I have ignored the supernodes that exist in both sides of the superfeature
                 # and only record their first occurrence. This later on results in a superfeature whose last element is zero and is discarded.
                 # (Again, just for this clause. If you wanted to add more clauses, it might not be the same)
+                weights[index] = x[index] # weight of each factor to node connection which comes from the projection numbers.
             except: # If there is no projection from the superfeature i onto supernode j, do nothing and check the next supernode
                 continue
         if all(feat_nodes): # Ignoring the superfeatures where the factor connects only two supernodes
             G.addFacNode(pot_SMK_FRNDS_SMK, snodes[feat_nodes[0]-1], snodes[feat_nodes[1]-1], snodes[feat_nodes[2]-1])
+            for iw, w in enumerate(weights):
+                edge_weights_per_node["snd_"+str(feat_nodes[iw]-1)].append(w) #For each supernodes, stores a weight. Note that the order of the weights that are listed for each supernode,
+                # comes from the order of added factors to the graph. In other word, if you look at the 'var' element in graph G,
+                # for each supernode var, a number neighboring factors 'nbrs' are listed which are ordered based on the order of their addition to the graph.
+                # so we just use this fact to correspond the weights with the factors.
+    G.addEdgeWeights(edge_weights_per_node) # The weights (the thickness of the connection between a supernode and its corresponding factor)
     return G, snode_names
-# END OF makeTheLiftedGraph FUNCTION
+# END OF makeTheLiftedGraph() FUNCTION
 #----------------------------------------------------------------------------
 
 
@@ -306,14 +298,17 @@ def testLiftedGraph():
 
     evidences = {"SMOKES": [("A", 1)], "FRIENDS": [("B", "C", 1), ("C", "B", 1)]}
     superNodes = sampleLNC(evidences)
-    [print(sn[0], " --- ", sn[1]) for spnodes in superNodes.values() for sn in spnodes]
+    [print("["+str(isn+1)+"]", sn[0], " --- ", sn[1]) for spnodes in superNodes.values() for isn, sn in enumerate(spnodes)]
 
     G, snode_names = makeTheLiftedGraph(superNodes)
-    G.var['snd_0'].condition(1)
+    G.var['snd_12'].condition(1)
+    G.var['snd_4'].condition(1)
 
     marg = G.marginals()
-    snd_marg = marg['snd_4']
-    print("Marginals for " + snode_names["snd_4"] + " = ", snd_marg)
+    snd_marg = marg['snd_11']
+    print("\nMarginals for " + snode_names["snd_11"] + " = ", snd_marg)
+    snd_marg = marg['snd_10']
+    print("\nMarginals for " + snode_names["snd_10"] + " = ", snd_marg)
 
 # standard run of test cases
 testLiftedGraph()
