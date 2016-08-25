@@ -130,7 +130,7 @@ def sampleLNC(evTable):
     """
     X = Symbol('X')
     Y = Symbol('Y')
-    names = {"A", "B", "C", "D", "E", "F"}
+    names = {"A", "B", "C", "D", "G", "F"}
 
     predicates = ["SMOKES", "FRIENDS"]
     rules = [["SMOKES", X, "FRIENDS", X, Y, "SMOKES", Y],]
@@ -265,11 +265,55 @@ def sampleLNC(evTable):
 #----------------------------------------------------------------------------
 
 
-def testToyGraph():
+#############################################################################
+def makeTheLiftedGraph(superNodes):
+    G = Graph()
+    pot_SMK_FRNDS_SMK = np.array([[[4, 4], [4, 4]], [[4, 4], [1, 4]]])
+    isn = 0 # Index of superNodes added to the graph.
+    snodes = []
+    snodes_projections = []
+    snode_names = {}
+    for predicate_spnodes in superNodes.values():
+        for snode in predicate_spnodes:
+            snd_name = "snd_" + str(isn)
+            snd = G.addVarNode(snd_name, 2) # Binary entities
+            snodes.append(snd)
+            snode_names[snd_name] = snode[0].__str__()
+            snodes_projections.append(snode[1]) #NOTE: 'snode' has two elements, first one is supernode that indicates the name of the predicate as well as the included groundings; secend element is the projections of the usperfeatures onto this supernode.
+            isn += 1
+    nsf = len(snodes_projections[0]) # number of superfeatures (taken from a sample supernode)
+    nsn = len(snodes) # number of supernodes
+    for i in np.arange(nsf):
+        feat_nodes = [0]*len(snodes_projections[0][i]) # feat_nodes enlists the supernodes connected to the superfeature
+        for j in np.arange(nsn):
+            try:
+                x = np.array(snodes_projections[j][i]) # snodes_projections[j][i] is a tuple that lists the projections of the superfeature i onto the supernode j
+                index = np.where(x!=0)[0][0]
+                feat_nodes[index] = j+1 # supernode j is connected to superfeature i as an atom at position index. (added by 1 to avoid confusion supernode with index 0 from no projection)
+                #NOTE: Here I have specifically written the above for SMOKES(X)^FRIENDS(X,Y)=>SMOKES(Y). i.o. I have ignored the supernodes that exist in both sides of the superfeature
+                # and only record their first occurrence. This later on results in a superfeature whose last element is zero and is discarded.
+                # (Again, just for this clause. If you wanted to add more clauses, it might not be the same)
+            except: # If there is no projection from the superfeature i onto supernode j, do nothing and check the next supernode
+                continue
+        if all(feat_nodes): # Ignoring the superfeatures where the factor connects only two supernodes
+            G.addFacNode(pot_SMK_FRNDS_SMK, snodes[feat_nodes[0]-1], snodes[feat_nodes[1]-1], snodes[feat_nodes[2]-1])
+    return G, snode_names
+# END OF makeTheLiftedGraph FUNCTION
+#----------------------------------------------------------------------------
+
+
+def testLiftedGraph():
 
     evidences = {"SMOKES": [("A", 1)], "FRIENDS": [("B", "C", 1), ("C", "B", 1)]}
     superNodes = sampleLNC(evidences)
     [print(sn[0], " --- ", sn[1]) for spnodes in superNodes.values() for sn in spnodes]
 
+    G, snode_names = makeTheLiftedGraph(superNodes)
+    G.var['snd_0'].condition(1)
+
+    marg = G.marginals()
+    snd_marg = marg['snd_4']
+    print("Marginals for " + snode_names["snd_4"] + " = ", snd_marg)
+
 # standard run of test cases
-testToyGraph()
+testLiftedGraph()

@@ -11,7 +11,7 @@ def makeToyGraph():
 
     X = Symbol('X')
     Y = Symbol('Y')
-    names = ["A", "B", "C", "D", "G", "F"]
+    names = ["A", "B", "C", "D", "G", "F", "H", "K", "M", "T", "T1", "T2", "T3", "T4", "L", "P"]
 
     rules = [["WALKS", X, "NEAR", X, Y, "WALKS", Y]]
 #    rules.append(["MOVES", X, "WALKS", X])
@@ -43,7 +43,8 @@ def makeToyGraph():
                     vars = []
                     for i in np.arange(narg):
                         var = rule[c].subs({X:x, Y:y})
-                        #print(var)
+#                        print(type(var))
+#                        print(type(var.name))
                         c += 1
                         vars.append(var.name)
                     if (narg==1):
