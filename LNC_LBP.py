@@ -105,7 +105,7 @@ class superNodeEdgeWeight:
 
 
 #############################################################################
-def sampleLNC(evTable):
+def sampleLNC(evTable, names):
     """
     :param evTable: evTable is a dictionary where the keys are the predicates,
     and the value of each key is a list of tuples that provide evidences for different groundings.
@@ -113,7 +113,6 @@ def sampleLNC(evTable):
     """
     X = Symbol('X')
     Y = Symbol('Y')
-    names = {"A", "B", "C", "D"}#, "E", "F", "G", "H", "I", "J", "X", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W"}
 
     predicates = ["SMOKES", "FRIENDS"]
     rules = [["SMOKES", X, "FRIENDS", X, Y, "SMOKES", Y],]
@@ -296,8 +295,9 @@ def makeTheLiftedGraph(superNodes):
 
 def testLiftedGraph():
 
-    evidences = {"SMOKES": [("A", 1)]}#, "FRIENDS": [("C", "D", 1), ("D", "C", 1)]}
-    superNodes = sampleLNC(evidences)
+    names = {"A", "B", "C", "D", "F"}#, "E", "F", "G", "H", "I", "J", "X", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W"}
+    evidences = {"SMOKES": [("A", 1)], "FRIENDS": [("C", "D", 1), ("D", "C", 1)]}#, ("B", 1)], "FRIENDS": [("C", "D", 1), ("D", "C", 1)]}
+    superNodes = sampleLNC(evidences, names)
     #[print("["+str(isn+1)+"]", sn[0], " --- ", sn[1]) for spnodes in superNodes.values() for isn, sn in enumerate(spnodes)]
     isn = 0
     for spnodes in superNodes.values():
@@ -306,19 +306,17 @@ def testLiftedGraph():
             isn += 1
 
     G, snode_names = makeTheLiftedGraph(superNodes)
-#    G.var['snd_0'].condition(1)
-    G.var['snd_1'].condition(1)
+    G.var['snd_2'].condition(1)
+    G.var['snd_10'].condition(1)
 
     print("------------------------------------")
     G.print_factors()
 
     marg = G.marginals()
-    snd_marg = marg['snd_0']
-    print("\nMarginals for " + snode_names["snd_0"] + " = ", snd_marg)
-    snd_marg = marg['snd_2']
-    print("\nMarginals for " + snode_names["snd_2"] + " = ", snd_marg)
-    snd_marg = marg['snd_4']
-    print("\nMarginals for " + snode_names["snd_4"] + " = ", snd_marg)
+    for k, v in marg.items():
+        print("Marginals for " + snode_names[k] + " = ", v)
+
+    print("------------------------------------")
 
 # standard run of test cases
 testLiftedGraph()
