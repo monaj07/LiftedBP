@@ -274,14 +274,14 @@ def makeTheLiftedGraph(superNodes):
             try:
                 x = np.array(snodes_projections[j][i]) # snodes_projections[j][i] is a tuple that lists the projections of the superfeature i onto the supernode j
                 index = np.where(x!=0)[0][0]
-                feat_nodes[index] = j+1 # supernode j is connected to superfeature i as an atom at position 'index'. (added by 1 to avoid confusion supernode with index 0 from no projection)
+                feat_nodes[index] = j+1 # supernode j is connected to this superfeature as an atom at position 'index'. (added by 1 to avoid confusing supernode[j=0], with the case with no projection)
                 #NOTE: Here I have specifically written the above for SMOKES(X)^FRIENDS(X,Y)=>SMOKES(Y). i.o. I have ignored the supernodes that exist in both sides of the superfeature
                 # and only record their first occurrence. This later on results in a superfeature whose last element is zero and is discarded.
                 # (Again, just for this clause. If you wanted to add more clauses, it might not be the same)
                 weights[index] = x[index] # weight of each factor to node connection which comes from the projection numbers.
             except: # If there is no projection from the superfeature i onto supernode j, do nothing and check the next supernode
                 continue
-        if all(feat_nodes): # Ignoring the superfeatures where the factor connects only two supernodes
+        if all(feat_nodes): # Ignoring the superfeatures where the factor connects to only two supernodes
             G.addFacNode(pot_SMK_FRNDS_SMK, snodes[feat_nodes[0]-1], snodes[feat_nodes[1]-1], snodes[feat_nodes[2]-1])
             for iw, w in enumerate(weights):
                 edge_weights_per_node["snd_"+str(feat_nodes[iw]-1)].append(w) #For each supernodes, stores a weight. Note that the order of the weights that are listed for each supernode,
@@ -296,19 +296,29 @@ def makeTheLiftedGraph(superNodes):
 
 def testLiftedGraph():
 
-    evidences = {"SMOKES": [("A", 1)], "FRIENDS": [("B", "C", 1), ("C", "B", 1)]}
+    evidences = {"SMOKES": [("A", 1)]}#, "FRIENDS": [("C", "D", 1), ("D", "C", 1)]}
     superNodes = sampleLNC(evidences)
-    [print("["+str(isn+1)+"]", sn[0], " --- ", sn[1]) for spnodes in superNodes.values() for isn, sn in enumerate(spnodes)]
+    #[print("["+str(isn+1)+"]", sn[0], " --- ", sn[1]) for spnodes in superNodes.values() for isn, sn in enumerate(spnodes)]
+    isn = 0
+    for spnodes in superNodes.values():
+        for sn in spnodes:
+            print("["+str(isn)+"]", sn[0], " --- ", sn[1])
+            isn += 1
 
     G, snode_names = makeTheLiftedGraph(superNodes)
-    G.var['snd_12'].condition(1)
-    G.var['snd_4'].condition(1)
+#    G.var['snd_0'].condition(1)
+    G.var['snd_1'].condition(1)
+
+    print("------------------------------------")
+    G.print_factors()
 
     marg = G.marginals()
-    snd_marg = marg['snd_11']
-    print("\nMarginals for " + snode_names["snd_11"] + " = ", snd_marg)
-    snd_marg = marg['snd_10']
-    print("\nMarginals for " + snode_names["snd_10"] + " = ", snd_marg)
+    snd_marg = marg['snd_0']
+    print("\nMarginals for " + snode_names["snd_0"] + " = ", snd_marg)
+    snd_marg = marg['snd_2']
+    print("\nMarginals for " + snode_names["snd_2"] + " = ", snd_marg)
+    snd_marg = marg['snd_4']
+    print("\nMarginals for " + snode_names["snd_4"] + " = ", snd_marg)
 
 # standard run of test cases
 testLiftedGraph()

@@ -44,6 +44,11 @@ class Graph:
         for k, v in edge_weights_per_node.items():
             self.var[k].weights = v
 
+    def print_factors(self):
+        for ifac, fac in enumerate(self.fac):
+            nbrs = [nb.name for nb in fac.nbrs]
+            print("fac "+str(ifac)+":", ", ".join(nbrs))
+
 
     def disableAll(self):
         """ Disable all nodes in graph

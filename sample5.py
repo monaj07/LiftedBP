@@ -85,23 +85,23 @@ def testToyGraph():
 
     G = makeToyGraph()
     G.var['SMOKES_A'].condition(1)
-    G.var['FRIENDS_B_C'].condition(1)
-    G.var['FRIENDS_C_B'].condition(1)
+    G.var['SMOKES_B'].condition(1)
+#    G.var['SMOKES_C'].condition(1)
+#    G.var['FRIENDS_D_C'].condition(1)
+#    G.var['FRIENDS_C_D'].condition(1)
     marg = G.marginals()
 
     # check the marginals
-    mg = marg['SMOKES_B']
-    print("SMOKES(B) marginals = ",mg)
     mg = marg['SMOKES_C']
     print("SMOKES(C) marginals = ",mg)
     mg = marg['SMOKES_D']
     print("SMOKES(D) marginals = ",mg)
-    mg = marg['FRIENDS_A_D']
-    print("FRIENDS(A, D) marginals = ",mg)
-    mg = marg['FRIENDS_B_D']
-    print("FRIENDS(B, D) marginals = ",mg)
-    mg = marg['FRIENDS_C_D']
-    print("FRIENDS(C, D) marginals = ",mg)
+    mg = marg['FRIENDS_D_A']
+    print("FRIENDS(D, A) marginals = ",mg)
+    mg = marg['FRIENDS_A_B']
+    print("FRIENDS(A, B) marginals = ",mg)
+    mg = marg['FRIENDS_C_B']
+    print("FRIENDS(C, B) marginals = ",mg)
     print('\n')
 
 
